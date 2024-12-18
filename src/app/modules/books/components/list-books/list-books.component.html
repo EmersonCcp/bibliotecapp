@@ -1,0 +1,96 @@
+<section>
+  <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por título"
+    class="w-full px-2 py-2 mt-5 border rounded" (input)="onSearch()" />
+</section>
+
+<div class="flex gap-3">
+
+  <div>
+    <div class="w-64 p-4 text-white bg-black bg-opacity-50">
+      <!-- Título -->
+      <h2 class="mb-4 font-bold text-gray-400 uppercase">Categorias</h2>
+
+      <!-- Lista de Categorías -->
+      <ul class="space-y-2">
+        <li>
+          <a (click)="setActiveCategory('')" [class.text-orange-500]="activeCategory === ''"
+            [class.font-bold]="activeCategory === ''" [class.border-b-2]="activeCategory === ''"
+            [class.border-orange-500]="activeCategory === ''"
+            class="block cursor-pointer hover:text-orange-500">Todas</a>
+        </li>
+        <li *ngFor="let item of categories">
+          <a (click)="setActiveCategory(item)" [class.text-orange-500]="activeCategory === item"
+            [class.font-bold]="activeCategory === item" [class.border-b-2]="activeCategory === item"
+            [class.border-orange-500]="activeCategory === item" class="block cursor-pointer hover:text-orange-500">
+            {{ item }}
+          </a>
+        </li>
+      </ul>
+
+    </div>
+
+  </div>
+
+  <div>
+    <section class="flex flex-wrap justify-center gap-4 mt-5 bg-center bg-cover md:justify-between">
+
+      <div *ngFor="let item of books"
+        class="relative w-[200px] h-[300px] hover:border-white hover:border-2 shadow-md rounded-sm cursor-pointer overflow-hidden group">
+
+        <!-- Imagen del libro -->
+        <img loading="lazy" class="object-cover w-full h-full transition-opacity duration-300" [src]="item.urlImage"
+          alt="Imagen del libro">
+
+        <!-- Opciones de acción (Ver, Eliminar, Editar) -->
+        <div
+          class="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black opacity-0 bg-opacity-40 group-hover:opacity-100">
+          <div class="flex gap-4">
+            <!-- Ver -->
+            <button title="Leer" (click)="operationBook(item,'view')" class="text-white hover:text-gray-300">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="text-white hover:text-orange-500 size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" />
+              </svg>
+            </button>
+            <!-- Editar -->
+            <button title="Editar" (click)="operationBook(item,'edit')" class="text-white hover:text-gray-300">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="text-white hover:text-orange-500 size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+              </svg>
+            </button>
+            <!-- Eliminar -->
+            <button title="Eliminar" (click)="operationBook(item,'delete')" class="text-white hover:text-gray-300">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="text-white hover:text-orange-500 size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+
+    </section>
+
+    <section>
+      <!-- Botones para paginar -->
+      <div class="flex justify-center gap-4 mt-4">
+        <app-button (buttonClick)="resetPagination()" [title]="'Reiniciar'"></app-button>
+        <app-button (buttonClick)="loadMoreBooks()" [title]="'Cargar más'"></app-button>
+      </div>
+
+      <!-- Indicador de carga -->
+      <p *ngIf="isLoading" class="mt-2 text-white">Cargando...</p>
+
+      <!-- Mensaje cuando no hay más libros -->
+      <p *ngIf="books.length > 0 && !isLoading && books.length % 10 !== 0" class="mt-2 text-white">
+        No hay más libros para cargar.
+      </p>
+    </section>
+  </div>
+</div>
