@@ -9,8 +9,12 @@ import { BookService } from 'src/shared/services/book.service';
 })
 export class BooksComponent {
   totalBooks = 0;
+  admin = false;
 
   constructor(private router: Router, private bookService: BookService) {
+    if (localStorage.getItem('admin')) {
+      this.admin = true;
+    }
     this.bookService.getTotalBooks().then((res) => {
       if (res) {
         this.totalBooks = res;

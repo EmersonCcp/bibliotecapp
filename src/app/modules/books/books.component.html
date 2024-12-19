@@ -5,7 +5,7 @@
 <!-- Contenido encima del fondo -->
 <!-- <div class="relative z-10"> -->
 <app-title [title]="'Listado de Libros (' + totalBooks + ' en total)'"></app-title>
-<app-button (buttonClick)="goTo()" [title]="'Agregar Nuevo Libro'"></app-button>
+<app-button *ngIf="admin" (buttonClick)="goTo()" [title]="'Agregar Nuevo Libro'"></app-button>
 <app-list-books></app-list-books>
 <!-- </div> -->
 <!-- </div> -->

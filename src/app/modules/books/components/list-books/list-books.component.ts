@@ -16,12 +16,17 @@ export class ListBooksComponent implements OnInit {
   searchTerm: string = '';
   categories = categories;
   activeCategory: string = '';
+  admin = false;
 
   constructor(
     private router: Router,
     private bookService: BookService,
     private alertService: AlertService
-  ) {}
+  ) {
+    if (localStorage.getItem('admin')) {
+      this.admin = true;
+    }
+  }
 
   ngOnInit() {
     this.loadBooks();

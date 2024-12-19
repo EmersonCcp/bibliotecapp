@@ -54,7 +54,8 @@
               </svg>
             </button>
             <!-- Editar -->
-            <button title="Editar" (click)="operationBook(item,'edit')" class="text-white hover:text-gray-300">
+            <button *ngIf="admin" title="Editar" (click)="operationBook(item,'edit')"
+              class="text-white hover:text-gray-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="text-white hover:text-orange-500 size-6">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -62,7 +63,8 @@
               </svg>
             </button>
             <!-- Eliminar -->
-            <button title="Eliminar" (click)="operationBook(item,'delete')" class="text-white hover:text-gray-300">
+            <button *ngIf="admin" title="Eliminar" (click)="operationBook(item,'delete')"
+              class="text-white hover:text-gray-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="text-white hover:text-orange-500 size-6">
                 <path stroke-linecap="round" stroke-linejoin="round"
