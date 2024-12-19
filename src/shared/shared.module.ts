@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DatabaseService } from './services/database.service';
 import { ButtonComponent } from './components/button/button.component';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -36,6 +35,6 @@ import { NgOptimizedImage } from '@angular/common';
     FormsModule,
     NgOptimizedImage,
   ],
-  providers: [DatabaseService, BookService, AlertService],
+  providers: [BookService, AlertService],
 })
 export class SharedModule {}
