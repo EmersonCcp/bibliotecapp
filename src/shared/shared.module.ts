@@ -7,13 +7,16 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BookService } from './services/book.service';
 
 //Firebase Modulo
-import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
-import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 import { environment } from 'src/environments/environment';
 import { AlertService } from './services/alert.service';
 import { TitleComponent } from './components/title/title.component';
+
+import { initializeApp } from 'firebase/app';
+import 'firebase/auth'; // Si vas a usar autenticación
+import 'firebase/firestore'; // Si vas a usar Firestore
+import 'firebase/storage'; // Si vas a usar almacenamiento
+
+initializeApp(environment.firebaseConfig);
 
 import { NgOptimizedImage } from '@angular/common';
 
@@ -22,10 +25,6 @@ import { NgOptimizedImage } from '@angular/common';
     CommonModule,
     HttpClientModule,
     ReactiveFormsModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireDatabaseModule,
-    AngularFirestoreModule,
-    AngularFireStorageModule,
     FormsModule,
     NgOptimizedImage,
   ],
@@ -34,7 +33,6 @@ import { NgOptimizedImage } from '@angular/common';
     ButtonComponent,
     TitleComponent,
     ReactiveFormsModule,
-    AngularFirestoreModule,
     FormsModule,
     NgOptimizedImage,
   ],

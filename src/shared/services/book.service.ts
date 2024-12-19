@@ -1,42 +1,64 @@
 import { Injectable } from '@angular/core';
-
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Book } from '../interfaces/book.interface';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import firebase from 'firebase/compat/app';
+import { initializeApp } from 'firebase/app';
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  where,
+  getDoc,
+  setDoc,
+  doc,
+  QueryDocumentSnapshot,
+  startAt,
+  endAt,
+} from 'firebase/firestore';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BookService {
-  private booksCollection = this.firestore.collection<Book>('books');
-  private lastDoc: firebase.firestore.QueryDocumentSnapshot<unknown> | null =
-    null; // Último documento para paginación
+  private app = initializeApp(environment.firebaseConfig); // Inicializa la aplicación Firebase
+  private db = getFirestore(this.app); // Obtiene la instancia de Firestore
 
-  constructor(private firestore: AngularFirestore) {}
+  private booksCollection = collection(this.db, 'books'); // Referencia a la colección de libros
+  private lastDoc: QueryDocumentSnapshot<Book> | null = null;
+
+  constructor() {}
 
   addBook(book: Book): Promise<string> {
-    const id = this.firestore.createId(); // Crear un ID para el nuevo documento
-    return this.booksCollection
-      .doc(id)
-      .set(book)
-      .then(() => id); // Devuelve el ID una vez que se guarda el libro
+    const bookRef = doc(this.booksCollection); // Crea una referencia al nuevo documento dentro de la colección 'books'
+    return setDoc(bookRef, book) // Crear y agregar el libro
+      .then(() => bookRef.id); // Devuelve el ID una vez que se guarda el libro
   }
 
-  // Obtener libros con paginación
   getBooksWithSearch(limitSize: number = 12): Observable<Book[]> {
-    let query = this.booksCollection.ref.orderBy('title').limit(limitSize);
+    let queryRef = query(
+      this.booksCollection,
+      orderBy('title'),
+      limit(limitSize)
+    );
 
     if (this.lastDoc) {
-      query = query.startAfter(this.lastDoc); // Continuar después del último documento
+      queryRef = query(queryRef, startAfter(this.lastDoc)); // Continuar después del último documento
     }
 
     return new Observable<Book[]>((observer) => {
-      query.get().then((snapshot) => {
+      getDocs(queryRef).then((snapshot) => {
         if (!snapshot.empty) {
           // Actualiza el último documento si hay resultados
-          this.lastDoc = snapshot.docs[snapshot.docs.length - 1];
+          this.lastDoc = snapshot.docs[
+            snapshot.docs.length - 1
+          ] as QueryDocumentSnapshot<Book>;
+
           const books = snapshot.docs.map((doc) => {
+            // Forzar que 'data' sea de tipo 'Book'
             const data = doc.data() as Book;
             const id = doc.id;
             return { id, ...data };
@@ -57,50 +79,6 @@ export class BookService {
   }
 
   /**
-   * Obtiene libros paginados y opcionalmente filtrados por título.
-   */
-  getBooksPaginated(
-    limitSize: number = 10,
-    searchQuery: string = ''
-  ): Observable<Book[]> {
-    // Base de la consulta ordenada por 'title'
-    let query = this.booksCollection.ref.orderBy('title');
-
-    // Filtrado si hay un término de búsqueda
-    if (searchQuery) {
-      query = query.startAt(searchQuery).endAt(searchQuery + '\uf8ff'); // Rango de búsqueda
-    }
-
-    // Paginación
-    if (this.lastDoc) {
-      query = query.startAfter(this.lastDoc);
-    }
-
-    query = query.limit(limitSize);
-
-    return new Observable<Book[]>((observer) => {
-      query.get().then((snapshot) => {
-        if (!snapshot.empty) {
-          // Actualizar el último documento
-          this.lastDoc = snapshot.docs[snapshot.docs.length - 1];
-
-          const books = snapshot.docs.map((doc) => {
-            const data = doc.data() as Book;
-            const id = doc.id;
-            return { id, ...data };
-          });
-
-          observer.next(books);
-        } else {
-          // No hay más documentos
-          observer.next([]);
-        }
-        observer.complete();
-      });
-    });
-  }
-
-  /**
    * Obtiene libros filtrados por categoría y paginados.
    * @param category - La categoría por la cual se filtra.
    * @param limitSize - Cantidad de libros por página.
@@ -109,26 +87,17 @@ export class BookService {
     category: string,
     limitSize: number = 10
   ): Observable<Book[]> {
-    // Reiniciar paginación si es necesario
-    let query = this.booksCollection.ref
-      .where('category', '==', category)
-      .orderBy('title');
-
-    // Aplicar paginación
-    // if (this.lastDoc) {
-    //   query = query.startAfter(this.lastDoc);
-    // }
-
-    query = query.limit(limitSize);
+    let queryRef = query(
+      this.booksCollection,
+      where('category', '==', category),
+      orderBy('title'),
+      limit(limitSize)
+    );
 
     return new Observable<Book[]>((observer) => {
-      query
-        .get()
+      getDocs(queryRef)
         .then((snapshot) => {
           if (!snapshot.empty) {
-            // Actualizar el último documento para paginación
-            // this.lastDoc = snapshot.docs[snapshot.docs.length - 1];
-
             const books = snapshot.docs.map((doc) => {
               const data = doc.data() as Book;
               const id = doc.id;
@@ -151,12 +120,8 @@ export class BookService {
 
   // Método para obtener la cantidad total de libros
   getTotalBooks(): Promise<number> {
-    return this.booksCollection
-      .get()
-      .toPromise()
-      .then((snapshot) => {
-        return snapshot!.size; // Devuelve el total de documentos
-      })
+    return getDocs(this.booksCollection)
+      .then((snapshot) => snapshot.size) // Devuelve el total de documentos
       .catch((error) => {
         console.error('Error al obtener la cantidad de libros:', error);
         return 0; // En caso de error, devuelve 0
@@ -164,16 +129,67 @@ export class BookService {
   }
 
   getBookById(id: string): Promise<Book | undefined> {
-    return this.booksCollection
-      .doc(id)
-      .get()
-      .toPromise()
-      .then((docSnapshot) => {
-        if (docSnapshot!.exists) {
-          return docSnapshot!.data() as Book;
-        } else {
-          return undefined; // Si no se encuentra el libro
-        }
-      });
+    const bookRef = doc(this.db, 'books', id);
+    return getDoc(bookRef).then((docSnapshot) => {
+      if (docSnapshot.exists()) {
+        return docSnapshot.data() as Book;
+      } else {
+        return undefined; // Si no se encuentra el libro
+      }
+    });
+  }
+
+  getBooksPaginated(
+    limitSize: number = 10,
+    searchQuery: string = ''
+  ): Observable<Book[]> {
+    // Base de la consulta ordenada por 'title'
+    let queryRef = query(this.booksCollection, orderBy('title'));
+
+    // Filtrado si hay un término de búsqueda
+    if (searchQuery) {
+      queryRef = query(
+        queryRef,
+        startAt(searchQuery),
+        endAt(searchQuery + '\uf8ff')
+      ); // Rango de búsqueda
+    }
+
+    // Paginación
+    if (this.lastDoc) {
+      queryRef = query(queryRef, startAfter(this.lastDoc)); // Continuar después del último documento
+    }
+
+    // Limitar el número de documentos por página
+    queryRef = query(queryRef, limit(limitSize));
+
+    return new Observable<Book[]>((observer) => {
+      getDocs(queryRef)
+        .then((snapshot) => {
+          if (!snapshot.empty) {
+            // Actualizar el último documento si hay resultados
+            this.lastDoc = snapshot.docs[
+              snapshot.docs.length - 1
+            ] as QueryDocumentSnapshot<Book>;
+
+            // Mapear los documentos a objetos del tipo Book
+            const books = snapshot.docs.map((doc) => {
+              const data = doc.data() as Book; // Forzar que 'data' sea de tipo 'Book'
+              const id = doc.id;
+              return { id, ...data };
+            });
+
+            observer.next(books);
+          } else {
+            // No hay más documentos, emitir un array vacío
+            observer.next([]);
+          }
+          observer.complete();
+        })
+        .catch((error) => {
+          console.error('Error al obtener los libros:', error);
+          observer.error(error); // Emite el error si ocurre uno
+        });
+    });
   }
 }
