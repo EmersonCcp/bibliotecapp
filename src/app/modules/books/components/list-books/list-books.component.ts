@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Book } from 'src/shared/interfaces/book.interface';
+import { AlertService } from 'src/shared/services/alert.service';
 import { BookService } from 'src/shared/services/book.service';
 import { categories } from 'src/shared/tips-select/types-select';
 
@@ -16,7 +17,11 @@ export class ListBooksComponent implements OnInit {
   categories = categories;
   activeCategory: string = '';
 
-  constructor(private router: Router, private bookService: BookService) {}
+  constructor(
+    private router: Router,
+    private bookService: BookService,
+    private alertService: AlertService
+  ) {}
 
   ngOnInit() {
     this.loadBooks();
@@ -129,7 +134,28 @@ export class ListBooksComponent implements OnInit {
   }
 
   deleteBook(id: string): void {
-    // Lógica para eliminar el libro
-    console.log('Eliminar libro con ID:', id);
+    if (id) {
+      this.alertService.confirmDelete(() => {
+        this.bookService.deleteBookById(id).subscribe({
+          next: () => {
+            this.books = this.books.filter((b) => b.id !== id);
+
+            this.alertService.successOrError(
+              'Operación Exitosa!',
+              'Libro eliminado',
+              'success'
+            );
+          },
+          error: (error) => {
+            console.error('Error al eliminar el libro:', error);
+            this.alertService.successOrError(
+              'Operación Cancelada!',
+              'Ocurrió un error',
+              'error'
+            );
+          },
+        });
+      });
+    }
   }
 }

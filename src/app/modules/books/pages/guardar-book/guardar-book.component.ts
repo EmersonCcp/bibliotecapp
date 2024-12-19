@@ -21,6 +21,7 @@ export class GuardarBookComponent implements OnInit {
   mod = 'edit';
   authors = authors;
   categories = categories;
+  id = null;
 
   constructor(
     private fb: FormBuilder,
@@ -34,8 +35,8 @@ export class GuardarBookComponent implements OnInit {
       title: ['', Validators.required],
       author: [''],
       description: [''],
-      urlImage: [''],
-      urlFile: [''],
+      urlImage: ['', [Validators.required, Validators.minLength(10)]],
+      urlFile: ['', [Validators.required, Validators.minLength(10)]],
       publishedDate: [''],
       category: [''],
     });
@@ -56,6 +57,7 @@ export class GuardarBookComponent implements OnInit {
       }
       if (param['id']) {
         let id = param['id'];
+        this.id = param['id'];
 
         this.bookService.getBookById(id).then((res) => {
           if (res) {
@@ -70,12 +72,32 @@ export class GuardarBookComponent implements OnInit {
     if (this.bookForm.valid) {
       this.alertService.loader();
       const newBook: Book = this.bookForm.value;
-      this.bookService.addBook(newBook).then((res) => {
-        if (res) {
-          this.router.navigateByUrl('books');
-          this.alertService.close();
-        }
-      });
+      if (this.id) {
+        this.bookService.updateBook(this.id, newBook).subscribe({
+          next: () => {
+            this.alertService.successOrError(
+              'Operación Existosa!',
+              'Libro guardado',
+              'success'
+            );
+            this.router.navigateByUrl('books');
+          },
+          error: (error) => {
+            console.error('Error al actualizar el libro:', error);
+          },
+        });
+      } else {
+        this.bookService.addBook(newBook).then((res) => {
+          if (res) {
+            this.alertService.successOrError(
+              'Operación Exitosa!',
+              'Libro guardado',
+              'success'
+            );
+            this.router.navigateByUrl('books');
+          }
+        });
+      }
     }
   }
 

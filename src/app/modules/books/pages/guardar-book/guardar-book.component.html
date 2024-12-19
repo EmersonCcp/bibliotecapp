@@ -63,7 +63,8 @@
       <!-- Botón de envío -->
       <div class="flex justify-end gap-3">
         <app-button (buttonClick)="goToBack()" [title]="'Atras'"></app-button>
-        <app-button *ngIf="mod == 'edit'" (buttonClick)="onSubmit()" [title]="'Guardar Libro'"></app-button>
+        <app-button [disabled]="bookForm.invalid" *ngIf="mod == 'edit'" (buttonClick)="onSubmit()"
+          [title]="'Guardar Libro'"></app-button>
       </div>
     </form>
   </div>

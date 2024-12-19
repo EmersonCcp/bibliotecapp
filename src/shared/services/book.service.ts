@@ -17,6 +17,8 @@ import {
   QueryDocumentSnapshot,
   startAt,
   endAt,
+  deleteDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { environment } from 'src/environments/environment';
 
@@ -189,6 +191,41 @@ export class BookService {
         .catch((error) => {
           console.error('Error al obtener los libros:', error);
           observer.error(error); // Emite el error si ocurre uno
+        });
+    });
+  }
+
+  deleteBookById(bookId: string): Observable<void> {
+    const bookDocRef = doc(this.db, 'books', bookId); // Referencia al documento del libro
+
+    return new Observable<void>((observer) => {
+      deleteDoc(bookDocRef)
+        .then(() => {
+          console.log(`Libro con ID ${bookId} eliminado exitosamente.`);
+          observer.next(); // Emite que la eliminación fue exitosa
+          observer.complete();
+        })
+        .catch((error) => {
+          console.error('Error al eliminar el libro:', error);
+          observer.error(error); // Emite el error si algo falla
+        });
+    });
+  }
+
+  // Método para actualizar un libro por ID
+  updateBook(bookId: string, updatedBook: Partial<Book>): Observable<void> {
+    const bookDocRef = doc(this.db, 'books', bookId); // Referencia al documento del libro
+
+    return new Observable<void>((observer) => {
+      updateDoc(bookDocRef, updatedBook) // Actualiza el libro con los nuevos datos
+        .then(() => {
+          console.log(`Libro con ID ${bookId} actualizado exitosamente.`);
+          observer.next(); // Emite que la actualización fue exitosa
+          observer.complete();
+        })
+        .catch((error) => {
+          console.error('Error al actualizar el libro:', error);
+          observer.error(error); // Emite el error si algo falla
         });
     });
   }
