@@ -18,6 +18,9 @@ export const authors: string[] = [
   'Javier Olivera Ravasi',
   'Fr. John J. Pasquini',
   'Martin Lutero',
+  'Cristián Rodrigo Iturralde',
+  'ApologeticaCatolica.org',
+  'J. B. Carol',
 ];
 
 export const categories: string[] = [
@@ -37,4 +40,5 @@ export const categories: string[] = [
   'Temas Variados',
   'Bíblia General',
   'Protestantismo',
+  'Curso',
 ];

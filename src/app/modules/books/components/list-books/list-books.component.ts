@@ -20,6 +20,10 @@ export class ListBooksComponent implements OnInit {
 
   ngOnInit() {
     this.loadBooks();
+
+    this.categories.sort((a, b) =>
+      a.localeCompare(b, 'es', { sensitivity: 'base' })
+    );
   }
 
   loadBooks() {

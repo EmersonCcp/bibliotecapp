@@ -39,6 +39,13 @@ export class GuardarBookComponent implements OnInit {
       publishedDate: [''],
       category: [''],
     });
+
+    this.categories.sort((a, b) =>
+      a.localeCompare(b, 'es', { sensitivity: 'base' })
+    );
+    this.authors.sort((a, b) =>
+      a.localeCompare(b, 'es', { sensitivity: 'base' })
+    );
   }
 
   ngOnInit(): void {
