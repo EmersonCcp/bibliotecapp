@@ -21,6 +21,7 @@ export const authors: string[] = [
   'Cristián Rodrigo Iturralde',
   'ApologeticaCatolica.org',
   'J. B. Carol',
+  'Justino Mártir',
 ];
 
 export const categories: string[] = [
@@ -28,8 +29,8 @@ export const categories: string[] = [
   'Canon Bíblico',
   'Catecismo',
   'Concilios',
-  'Conversiónes',
-  'Eucaristía',
+  'Conversiones',
+  'Eucaristia',
   'Historia de la Iglesia',
   'Jesucristo',
   'Justificación',

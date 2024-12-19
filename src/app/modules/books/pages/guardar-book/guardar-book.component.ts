@@ -57,7 +57,7 @@ export class GuardarBookComponent implements OnInit {
       }
       if (param['id']) {
         let id = param['id'];
-        this.id = param['id'];
+        this.id = param['id'] !== '0' ? param['id'] : null;
 
         this.bookService.getBookById(id).then((res) => {
           if (res) {
@@ -72,7 +72,7 @@ export class GuardarBookComponent implements OnInit {
     if (this.bookForm.valid) {
       this.alertService.loader();
       const newBook: Book = this.bookForm.value;
-      if (this.id) {
+      if (this.id !== null) {
         this.bookService.updateBook(this.id, newBook).subscribe({
           next: () => {
             this.alertService.successOrError(
