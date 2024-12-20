@@ -32,10 +32,10 @@
   </div>
 
   <div class="w-full ">
-    <section class="flex flex-wrap justify-center bg-center bg-cover md:justify-between gap-y-5 md:gap-y-10">
+    <section class="flex flex-wrap justify-between bg-center bg-cover gap-y-5 md:gap-y-10">
 
       <div *ngFor="let item of books"
-        class="relative w-[200px] h-[300px] hover:border-white hover:border-2 shadow-lg rounded-sm cursor-pointer overflow-hidden group">
+        class="relative md:w-[200px] w-[150px] md:h-[300px] h-[200px] hover:border-white hover:border-2 shadow-lg rounded-sm cursor-pointer overflow-hidden group">
 
         <!-- Imagen del libro -->
         <img loading="lazy" class="object-cover w-full h-full transition-opacity duration-300" [src]="item.urlImage"

@@ -201,7 +201,6 @@ export class BookService {
     return new Observable<void>((observer) => {
       deleteDoc(bookDocRef)
         .then(() => {
-          console.log(`Libro con ID ${bookId} eliminado exitosamente.`);
           observer.next(); // Emite que la eliminación fue exitosa
           observer.complete();
         })
@@ -219,7 +218,6 @@ export class BookService {
     return new Observable<void>((observer) => {
       updateDoc(bookDocRef, updatedBook) // Actualiza el libro con los nuevos datos
         .then(() => {
-          console.log(`Libro con ID ${bookId} actualizado exitosamente.`);
           observer.next(); // Emite que la actualización fue exitosa
           observer.complete();
         })

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Book } from 'src/shared/interfaces/book.interface';
 import { AlertService } from 'src/shared/services/alert.service';
+import { AuthService } from 'src/shared/services/auth.service';
 import { BookService } from 'src/shared/services/book.service';
 import { categories } from 'src/shared/tips-select/types-select';
 
@@ -21,11 +22,14 @@ export class ListBooksComponent implements OnInit {
   constructor(
     private router: Router,
     private bookService: BookService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private authService: AuthService
   ) {
-    if (localStorage.getItem('admin')) {
-      this.admin = true;
-    }
+    this.authService.waitForAuthState().then((user) => {
+      if (user) {
+        this.admin = true;
+      }
+    });
   }
 
   ngOnInit() {
@@ -42,7 +46,6 @@ export class ListBooksComponent implements OnInit {
         this.books = this.sortBooksByTitle(res);
       } else {
         this.books = [];
-        console.log('No books found.');
       }
     });
   }
@@ -78,8 +81,6 @@ export class ListBooksComponent implements OnInit {
         if (data.length > 0) {
           this.books = [...this.books, ...data];
           this.books = this.sortBooksByTitle(this.books);
-        } else {
-          console.log('No hay más documentos para cargar');
         }
         this.isLoading = false;
       });
@@ -129,8 +130,6 @@ export class ListBooksComponent implements OnInit {
   viewBook(item: Book) {
     if (item.urlFile) {
       window.open(item.urlFile, '_blank');
-    } else {
-      console.log('La URL del archivo no está disponible');
     }
   }
 

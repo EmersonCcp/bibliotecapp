@@ -18,6 +18,7 @@ import 'firebase/storage'; // Si vas a usar almacenamiento
 initializeApp(environment.firebaseConfig);
 
 import { NgOptimizedImage } from '@angular/common';
+import { AuthService } from './services/auth.service';
 
 @NgModule({
   imports: [
@@ -35,6 +36,6 @@ import { NgOptimizedImage } from '@angular/common';
     FormsModule,
     NgOptimizedImage,
   ],
-  providers: [BookService, AlertService],
+  providers: [BookService, AlertService, AuthService],
 })
 export class SharedModule {}

@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LoginGuard } from 'src/shared/guards/login.guard';
 
 const routes: Routes = [
   {
@@ -8,12 +9,12 @@ const routes: Routes = [
       import('./modules/books/books.module').then((m) => m.BooksModule),
   },
   {
-    path: 'categories',
+    path: 'auth',
     loadChildren: () =>
-      import('./modules/categories/categories.module').then(
-        (m) => m.CategoriesModule
-      ),
+      import('./modules/auth/auth.module').then((m) => m.AuthModule),
+    canActivate: [LoginGuard],
   },
+
   {
     path: '',
     redirectTo: 'books',
