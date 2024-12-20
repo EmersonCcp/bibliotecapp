@@ -37,9 +37,12 @@
       <div *ngFor="let item of books"
         class="relative md:w-[200px] w-[150px] md:h-[300px] h-[200px] hover:border-white hover:border-2 shadow-lg rounded-sm cursor-pointer overflow-hidden group">
 
-        <!-- Imagen del libro -->
-        <img loading="lazy" class="object-cover w-full h-full transition-opacity duration-300" [src]="item.urlImage"
-          alt="Imagen del libro">
+        <div *ngIf="!item.loaded" class="w-full h-full bg-orange-300 animate-pulse"></div>
+
+        <!-- Imagen real con transición de opacidad -->
+        <img *ngIf="item.urlImage" [src]="item.urlImage" alt="Imagen del libro"
+          class="object-cover w-full h-full transition-opacity duration-300" loading="lazy"
+          [ngClass]="{'opacity-0': !item.loaded, 'opacity-100': item.loaded}" (load)="onImageLoad(item)">
 
         <!-- Opciones de acción (Ver, Eliminar, Editar) -->
         <div

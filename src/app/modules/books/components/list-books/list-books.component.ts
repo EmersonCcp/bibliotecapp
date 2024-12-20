@@ -43,11 +43,18 @@ export class ListBooksComponent implements OnInit {
   loadBooks() {
     this.bookService.getBooksPaginated(12, this.searchTerm).subscribe((res) => {
       if (res.length > 0) {
-        this.books = this.sortBooksByTitle(res);
+        this.books = this.sortBooksByTitle(res).map((book) => ({
+          ...book,
+          loaded: false, // Inicializamos el campo loaded para cada libro
+        }));
       } else {
         this.books = [];
       }
     });
+  }
+
+  onImageLoad(book: any) {
+    book.loaded = true; // Marca la imagen como cargada
   }
 
   setActiveCategory(category: string) {
