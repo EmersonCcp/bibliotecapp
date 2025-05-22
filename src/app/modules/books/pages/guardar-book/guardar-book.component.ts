@@ -10,6 +10,8 @@ import {
   authors,
   categories,
 } from '../../../../../shared/tips-select/types-select';
+import { ILibro } from 'src/shared/interfaces/libro.interface';
+import { LibroService } from 'src/shared/services/libro.service';
 
 @Component({
   selector: 'app-guardar-book',
@@ -17,11 +19,13 @@ import {
   styleUrls: ['./guardar-book.component.css'],
 })
 export class GuardarBookComponent implements OnInit {
-  bookForm: FormGroup;
+  form: FormGroup
   mod = 'edit';
   authors = authors;
   categories = categories;
-  id = null;
+  id = 0;
+
+  libro!: ILibro;
 
   constructor(
     private fb: FormBuilder,
@@ -29,17 +33,18 @@ export class GuardarBookComponent implements OnInit {
     private router: Router,
     private activateRoute: ActivatedRoute,
     private location: Location,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private librosService: LibroService
   ) {
-    this.bookForm = this.fb.group({
-      title: ['', Validators.required],
-      author: [''],
-      description: [''],
-      urlImage: ['', [Validators.required, Validators.minLength(10)]],
-      urlFile: ['', [Validators.required, Validators.minLength(10)]],
-      publishedDate: [''],
-      category: [''],
-    });
+    this.form = this.fb.group({
+      libr_titulo: ['', [Validators.required]],
+      libr_autor: [null],
+      libr_descripcion: [null],
+      libr_urlImagen: ['', Validators.required],
+      libr_urlFile: ['', Validators.required],
+      libr_categoria: ['', Validators.required],
+      libr_estado: [true]
+    })
 
     this.categories.sort((a, b) =>
       a.localeCompare(b, 'es', { sensitivity: 'base' })
@@ -52,49 +57,61 @@ export class GuardarBookComponent implements OnInit {
   ngOnInit(): void {
     this.activateRoute.params.subscribe((param) => {
       if (param['mod'] == 'view') {
-        this.bookForm.disable();
+        this.form.disable();
         this.mod == 'view';
       }
       if (param['id']) {
         let id = param['id'];
-        this.id = param['id'] !== '0' ? param['id'] : null;
+        this.id = param['id'] !== '0' ? Number(param['id']) : 0;
 
-        this.bookService.getBookById(id).then((res) => {
-          if (res) {
-            this.bookForm.patchValue(res);
+        this.librosService.findOne(this.id).subscribe(res => {
+          if(res.ok) {
+            this.libro = res.item;
+            this.form.patchValue(res.item);
           }
         });
+        
       }
     });
   }
 
   onSubmit(): void {
-    if (this.bookForm.valid) {
+    if (this.form.valid) {
       this.alertService.loader();
-      const newBook: Book = this.bookForm.value;
-      if (this.id !== null) {
-        this.bookService.updateBook(this.id, newBook).subscribe({
-          next: () => {
-            this.alertService.successOrError(
-              'Operación Existosa!',
-              'Libro guardado',
-              'success'
-            );
-            this.router.navigateByUrl('books');
-          },
-          error: (error) => {
-            console.error('Error al actualizar el libro:', error);
-          },
-        });
-      } else {
-        this.bookService.addBook(newBook).then((res) => {
-          if (res) {
+      const newLibro: ILibro = this.form.value;
+      
+      if (this.id !== 0) {
+        this.librosService.update(this.id, newLibro).subscribe(res => {
+          if (res.ok) {
             this.alertService.successOrError(
               'Operación Exitosa!',
               'Libro guardado',
               'success'
             );
             this.router.navigateByUrl('books');
+          } else {
+            this.alertService.successOrError(
+              'Ocurrió un Error!',
+              res.message,
+              'error'
+            );
+          }
+        });
+      } else {
+        this.librosService.create(newLibro).subscribe((res) => {
+          if (res.ok) {
+            this.alertService.successOrError(
+              'Operación Exitosa!',
+              'Libro guardado',
+              'success'
+            );
+            this.router.navigateByUrl('books');
+          } else {
+            this.alertService.successOrError(
+              'Ocurrió un Error!',
+              res.message,
+              'error'
+            );
           }
         });
       }

@@ -31,8 +31,8 @@ export class LoginComponent implements OnInit {
   onSubmit() {
     this.alertService.loader();
     const { email, password } = this.form.value;
-    this.authService.signIn(email, password).then((res) => {
-      if (res) {
+    this.authService.login(email, password).subscribe((res) => {
+      if (res.ok) {
         this.alertService.successOrError('Sesión Iniciada!', '', 'success');
         this.router.navigate(['/books']);
       } else {

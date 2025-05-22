@@ -19,6 +19,9 @@ initializeApp(environment.firebaseConfig);
 
 import { NgOptimizedImage } from '@angular/common';
 import { AuthService } from './services/auth.service';
+import { LibroService } from './services/libro.service';
+import { AuthGuard } from './guards/auth.guard';
+import { LoginGuard } from './guards/login.guard';
 
 @NgModule({
   imports: [
@@ -28,14 +31,15 @@ import { AuthService } from './services/auth.service';
     FormsModule,
     NgOptimizedImage,
   ],
-  declarations: [ButtonComponent, TitleComponent],
+  declarations: [ButtonComponent, TitleComponent, ],
   exports: [
     ButtonComponent,
     TitleComponent,
     ReactiveFormsModule,
     FormsModule,
     NgOptimizedImage,
+    HttpClientModule
   ],
-  providers: [BookService, AlertService, AuthService],
+  providers: [BookService, AlertService, AuthService, LibroService,AuthGuard,LoginGuard],
 })
 export class SharedModule {}

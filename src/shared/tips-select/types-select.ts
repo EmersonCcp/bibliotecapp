@@ -22,6 +22,7 @@ export const authors: string[] = [
   'ApologeticaCatolica.org',
   'J. B. Carol',
   'Justino Mártir',
+  'John Lennox',
 ];
 
 export const categories: string[] = [
@@ -42,4 +43,5 @@ export const categories: string[] = [
   'Bíblia General',
   'Protestantismo',
   'Curso',
+  'Fe y Razon'
 ];

@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { Book } from 'src/shared/interfaces/book.interface';
+import { ILibro } from 'src/shared/interfaces/libro.interface';
 import { AlertService } from 'src/shared/services/alert.service';
 import { AuthService } from 'src/shared/services/auth.service';
 import { BookService } from 'src/shared/services/book.service';
+import { LibroService } from 'src/shared/services/libro.service';
 import { categories } from 'src/shared/tips-select/types-select';
 
 @Component({
@@ -19,55 +22,92 @@ export class ListBooksComponent implements OnInit {
   activeCategory: string = '';
   admin = false;
 
+  libros: ILibro[] = [];
+  filteredLibros: ILibro[] = [];
+  selectedLibros: any[] = [];
+  private destroy$ = new Subject<void>();
+  loading: boolean = false;
+  searchQuery: string = '';
+  page = 1;
+  limit = 14;
+  hasMore = true;
+  totalLibros = 0;
+  dropdownOpen = true;
+
+
+  pages: number[] = [];
+
   constructor(
     private router: Router,
     private bookService: BookService,
     private alertService: AlertService,
-    private authService: AuthService
+    private authService: AuthService,
+    private librosService: LibroService
   ) {
-    this.authService.waitForAuthState().then((user) => {
-      if (user) {
-        this.admin = true;
-      }
-    });
+    const user = this.authService.desencriptarUsuario();
+    if (user && user.usu_codigo) {
+      this.admin = true;
+    }
   }
 
   ngOnInit() {
-    this.loadBooks();
+    this.loadLibros();
 
     this.categories.sort((a, b) =>
       a.localeCompare(b, 'es', { sensitivity: 'base' })
     );
   }
 
-  loadBooks() {
-    this.bookService.getBooksPaginated(12, this.searchTerm).subscribe((res) => {
-      if (res.length > 0) {
-        this.books = this.sortBooksByTitle(res).map((book) => ({
-          ...book,
-          loaded: false, // Inicializamos el campo loaded para cada libro
-        }));
-      } else {
-        this.books = [];
-      }
-    });
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  loadLibros(category: string = '', search: string = '') {
+    this.loading = true;
+
+    this.librosService
+      .findWithFilters(this.limit, this.page, category || search)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        if (res.ok) {
+          this.libros = res.items;
+          this.filteredLibros = res.items;
+          this.loading = false;
+          this.totalLibros = res.total;
+          this.hasMore = this.libros.length < this.totalLibros;
+
+          this.filteredLibros.forEach((libro) => {
+            libro.selected = this.selectedLibros.some(
+              (p) => p.libr_codigo === libro.libr_codigo
+            );
+          });
+
+          const totalPages = Math.ceil(this.totalLibros / this.limit);
+          this.pages = [];
+          for (let i = 1; i <= totalPages; i++) {
+            this.pages.push(i);
+          }
+        } else {
+          console.error('Error al cargar libros', res.message);
+          this.loading = false;
+        }
+      });
+  }
+
+  goToPage(page: number) {
+    if (page === this.page) return;
+    this.page = page;
+    this.loadLibros(this.activeCategory, this.searchTerm);
   }
 
   onImageLoad(book: any) {
-    book.loaded = true; // Marca la imagen como cargada
+    book.loaded = true;
   }
 
   setActiveCategory(category: string) {
-    if (category == '') {
-      this.loadBooks();
-    } else {
-      this.bookService.getBooksByCategory(category, 100).subscribe((res) => {
-        if (res) {
-          this.books = this.sortBooksByTitle(res);
-        }
-      });
-    }
     this.activeCategory = category;
+    this.page = 1;
+    this.loadLibros(category, '');
   }
 
   private sortBooksByTitle(books: Book[]): Book[] {
@@ -76,57 +116,40 @@ export class ListBooksComponent implements OnInit {
     );
   }
 
-  // Cargar más libros (página siguiente)
   loadMoreBooks(): void {
-    if (this.isLoading) return; // Evitar solicitudes duplicadas
-
-    this.isLoading = true;
-
-    this.bookService
-      .getBooksPaginated(12, this.searchTerm)
-      .subscribe((data) => {
-        if (data.length > 0) {
-          this.books = [...this.books, ...data];
-          this.books = this.sortBooksByTitle(this.books);
-        }
-        this.isLoading = false;
-      });
-  }
-
-  onSearch(): void {
-    // Reiniciar paginación y libros al realizar una nueva búsqueda
-    if (this.searchTerm.length > 3) {
-      this.books = [];
-      this.bookService.resetPagination();
-      this.loadBooks();
-    } else if (this.searchTerm.length == 0) {
-      this.books = [];
-      this.bookService.resetPagination();
-      this.loadBooks();
+    if (this.page * this.limit < this.totalLibros) {
+      this.page++;
+      this.loadLibros();
     }
   }
 
-  // Resetear la paginación
+  onSearch(): void {
+    this.page = 1;
+    if (this.searchTerm.trim() === '') {
+      this.loadLibros(this.activeCategory, '');
+    } else if (this.searchTerm.length > 2) {
+      this.loadLibros(this.activeCategory, this.searchTerm);
+    }
+  }
+
   resetPagination(): void {
-    this.books = [];
-    this.bookService.resetPagination();
-    this.loadBooks();
+    this.loadLibros();
   }
 
   goTo(id: string, mod: string = 'view') {
     this.router.navigateByUrl(`books/${id}/${mod}`);
   }
 
-  operationBook(item: Book, operation: string): void {
+  operationBook(libro: ILibro, operation: string): void {
     switch (operation) {
       case 'view':
-        this.viewBook(item);
+        this.viewBook(libro);
         break;
       case 'edit':
-        this.editBook(item.id!);
+        this.editBook(libro.libr_codigo!);
         break;
       case 'delete':
-        this.deleteBook(item.id!);
+        this.deleteBook(libro.libr_codigo!);
         break;
       default:
         console.log('Operación no reconocida');
@@ -134,22 +157,37 @@ export class ListBooksComponent implements OnInit {
     }
   }
 
-  viewBook(item: Book) {
-    if (item.urlFile) {
-      window.open(item.urlFile, '_blank');
-    }
+  viewBook(libro: ILibro) {
+
+    libro.libr_cantidad_vistas!++;
+
+    delete libro.selected;
+
+    this.librosService.update(libro.libr_codigo!, libro).subscribe(res => {
+      console.log(res);
+      
+      if(res.ok) {
+        if (libro.libr_urlFile) {
+          window.open(libro.libr_urlFile, '_blank');
+        }
+      }
+    })
+
+    
   }
 
-  editBook(id: string): void {
+  editBook(id: number): void {
     this.router.navigateByUrl(`books/${id}/edit`);
   }
 
-  deleteBook(id: string): void {
+  deleteBook(id: number): void {
     if (id) {
       this.alertService.confirmDelete(() => {
-        this.bookService.deleteBookById(id).subscribe({
+        this.librosService.remove(id).subscribe({
           next: () => {
-            this.books = this.books.filter((b) => b.id !== id);
+            this.filteredLibros = this.filteredLibros.filter(
+              (b) => b.libr_codigo !== id
+            );
 
             this.alertService.successOrError(
               'Operación Exitosa!',

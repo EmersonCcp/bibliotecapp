@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AlertService } from 'src/shared/services/alert.service';
 import { AuthService } from 'src/shared/services/auth.service';
 import { BookService } from 'src/shared/services/book.service';
+import { LibroService } from 'src/shared/services/libro.service';
 
 @Component({
   selector: 'app-books',
@@ -17,16 +18,21 @@ export class BooksComponent {
     private router: Router,
     private bookService: BookService,
     private authService: AuthService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private librosService: LibroService
   ) {
-    this.authService.waitForAuthState().then((user) => {
-      if (user) {
-        this.admin = true;
-      }
-    });
-    this.bookService.getTotalBooks().then((res) => {
-      if (res) {
-        this.totalBooks = res;
+    const user = this.authService.desencriptarUsuario();
+    if (user && user.usu_codigo) {
+      this.admin = true;
+    }
+
+    this.loadLibros();
+  }
+
+  loadLibros() {
+    this.librosService.findWithFilters(1).subscribe((res) => {
+      if (res.ok) {
+        this.totalBooks = res.total;
       }
     });
   }
@@ -41,7 +47,7 @@ export class BooksComponent {
 
   cerrarSesion() {
     this.alertService.loader();
-    this.authService.signOut().then((res) => {
+    this.authService.logout().then((res) => {
       this.alertService.successOrError(
         'Operación Exitosa!',
         'Sesión Cerrada!',

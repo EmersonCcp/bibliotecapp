@@ -1,4 +1,7 @@
 export const environment = {
+  apiUrlSocket: 'http://localhost:3100',
+  apiURL: 'http://localhost:3100/api',
+  secretKey: 'tangamandapio',
   production: false,
   firebaseConfig: {
     apiKey: 'AIzaSyAgK0h2g4T38oGdMcJvjDYdABh99zZHNsE',

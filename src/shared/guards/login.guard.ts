@@ -1,30 +1,28 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { CanActivate } from '@angular/router';
 import { Router } from '@angular/router';
 import { Auth, getAuth, onAuthStateChanged } from 'firebase/auth';
+import { AuthService } from '../services/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LoginGuard implements CanActivate {
-  private auth: Auth;
 
-  constructor(private router: Router) {
-    this.auth = getAuth();
+
+  constructor(private router: Router, private authService: AuthService) {
   }
 
   canActivate(): Promise<boolean> {
     return new Promise((resolve) => {
-      onAuthStateChanged(this.auth, (user) => {
-        if (user) {
-          // Si el usuario está autenticado, redirige a la página principal
-          this.router.navigate(['/books']); // O la ruta a la que quieras redirigir
-          resolve(false); // No permitir acceso al login
-        } else {
-          // Si no está autenticado, permitir el acceso a la ruta de login
-          resolve(true);
-        }
-      });
+
+      const user = this.authService.desencriptarUsuario();
+      if(user && user.usu_codigo) {
+        this.router.navigate(['/books']);
+        resolve(false);
+      } else {
+        resolve(true);
+      }
     });
   }
 }

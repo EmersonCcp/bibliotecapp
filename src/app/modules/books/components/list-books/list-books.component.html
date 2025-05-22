@@ -5,51 +5,79 @@
 
 <div class="flex flex-col gap-3 md:flex-row">
 
-  <div>
-    <div class="w-full p-4 text-white bg-black rounded-sm md:w-64 bg-opacity-60">
-      <!-- Título -->
-      <h2 class="mb-4 font-bold text-gray-400 uppercase">Categorias</h2>
-
-      <!-- Lista de Categorías -->
-      <ul class="space-y-2">
-        <li>
-          <a (click)="setActiveCategory('')" [class.text-orange-500]="activeCategory === ''"
-            [class.font-bold]="activeCategory === ''" [class.border-b-2]="activeCategory === ''"
-            [class.border-orange-500]="activeCategory === ''"
-            class="block cursor-pointer hover:text-orange-500">Todas</a>
-        </li>
-        <li *ngFor="let item of categories">
-          <a (click)="setActiveCategory(item)" [class.text-orange-500]="activeCategory === item"
-            [class.font-bold]="activeCategory === item" [class.border-b-2]="activeCategory === item"
-            [class.border-orange-500]="activeCategory === item" class="block cursor-pointer hover:text-orange-500">
-            {{ item }}
-          </a>
-        </li>
-      </ul>
-
-    </div>
-
+  <div class="relative w-full h-min md:w-64">
+    <!-- Botón para abrir/cerrar el dropdown -->
+    <button
+      (click)="toggleDropdown()"
+      class="w-full px-4 py-2 text-left bg-black bg-opacity-80 text-white rounded-sm focus:outline-none flex justify-between items-center"
+    >
+      <span>
+        {{ activeCategory === '' ? 'Categorias' : activeCategory }}
+      </span>
+      <svg
+        class="w-4 h-4 ml-2 transition-transform duration-200"
+        [class.rotate-180]="dropdownOpen"
+        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+  
+    <!-- Menú desplegable -->
+    <ul
+      *ngIf="dropdownOpen"
+      class="absolute z-10 w-full mt-1 bg-black bg-opacity-60 text-white rounded-sm h-min overflow-auto"
+    >
+      <li>
+        <a
+          (click)="setActiveCategory(''); toggleDropdown()"
+          [class.text-orange-500]="activeCategory === ''"
+          [class.font-bold]="activeCategory === ''"
+          [class.border-b-2]="activeCategory === ''"
+          [class.border-orange-500]="activeCategory === ''"
+          class="block px-4 py-2 cursor-pointer hover:text-orange-500"
+          >Todas</a
+        >
+      </li>
+      <li *ngFor="let item of categories">
+        <a
+          (click)="setActiveCategory(item); toggleDropdown()"
+          [class.text-orange-500]="activeCategory === item"
+          [class.font-bold]="activeCategory === item"
+          [class.border-b-2]="activeCategory === item"
+          [class.border-orange-500]="activeCategory === item"
+          class="block px-4 py-2 cursor-pointer hover:text-orange-500"
+          >{{ item }}</a
+        >
+      </li>
+    </ul>
   </div>
+  
 
   <div class="w-full ">
     <section class="flex flex-wrap justify-between bg-center bg-cover gap-y-5 md:gap-y-10">
 
-      <div *ngFor="let item of books"
+      <div *ngFor="let libro of filteredLibros"
         class="relative md:w-[200px] w-[150px] md:h-[300px] h-[200px] hover:border-white hover:border-2 shadow-lg rounded-sm cursor-pointer overflow-hidden group">
 
-        <div *ngIf="!item.loaded" class="w-full h-full bg-orange-300 animate-pulse"></div>
+        <!-- <div *ngIf="!libro.loaded" class="w-full h-full bg-orange-300 animate-pulse"></div> -->
 
         <!-- Imagen real con transición de opacidad -->
-        <img *ngIf="item.urlImage" [src]="item.urlImage" alt="Imagen del libro"
+        <img *ngIf="libro.libr_urlImagen" [src]="libro.libr_urlImagen" alt="Imagen del libro"
           class="object-cover w-full h-full transition-opacity duration-300" loading="lazy"
-          [ngClass]="{'opacity-0': !item.loaded, 'opacity-100': item.loaded}" (load)="onImageLoad(item)">
+          >
+
+          <!-- <img *ngIf="libro.libr_urlImagen" [src]="libro.libr_urlImagen" alt="Imagen del libro"
+          class="object-cover w-full h-full transition-opacity duration-300" loading="lazy"
+          [ngClass]="{'opacity-0': !item.loaded, 'opacity-100': item.loaded}" (load)="onImageLoad(item)"> -->
 
         <!-- Opciones de acción (Ver, Eliminar, Editar) -->
         <div
           class="absolute inset-0 flex items-center justify-center transition-opacity duration-300 bg-black opacity-0 bg-opacity-40 group-hover:opacity-100">
           <div class="flex gap-4">
             <!-- Ver -->
-            <button title="Leer" (click)="operationBook(item,'view')" class="text-white hover:text-gray-300">
+            <button title="Leer" (click)="operationBook(libro,'view')" class="text-white hover:text-gray-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="text-white hover:text-orange-500 size-6">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -57,7 +85,7 @@
               </svg>
             </button>
             <!-- Editar -->
-            <button *ngIf="admin" title="Editar" (click)="operationBook(item,'edit')"
+            <button *ngIf="admin" title="Editar" (click)="operationBook(libro,'edit')"
               class="text-white hover:text-gray-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="text-white hover:text-orange-500 size-6">
@@ -66,7 +94,7 @@
               </svg>
             </button>
             <!-- Eliminar -->
-            <button *ngIf="admin" title="Eliminar" (click)="operationBook(item,'delete')"
+            <button *ngIf="admin" title="Eliminar" (click)="operationBook(libro,'delete')"
               class="text-white hover:text-gray-300">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="text-white hover:text-orange-500 size-6">
@@ -79,21 +107,25 @@
 
       </div>
 
-
     </section>
 
     <section>
-      <!-- Botones para paginar -->
-      <div class="flex justify-center gap-4 mt-4">
-        <app-button (buttonClick)="resetPagination()" [title]="'Reiniciar'"></app-button>
-        <app-button (buttonClick)="loadMoreBooks()" [title]="'Cargar más'"></app-button>
+      <!-- Botones numerados para paginar -->
+      <div class="flex justify-center gap-2 mt-4">
+        <button
+          *ngFor="let pageNum of pages"
+          (click)="goToPage(pageNum)"
+          [class.bg-orange-500]="pageNum === page"
+          class="px-3 py-1 rounded border border-gray-300 hover:bg-orange-400 text-white cursor-pointer">
+          {{ pageNum }}
+        </button>
       </div>
-
+    
       <!-- Indicador de carga -->
-      <p *ngIf="isLoading" class="mt-2 text-white">Cargando...</p>
-
+      <p *ngIf="isLoading || loading" class="mt-2 text-white">Cargando...</p>
+    
       <!-- Mensaje cuando no hay más libros -->
-      <p *ngIf="books.length > 0 && !isLoading && books.length % 10 !== 0" class="mt-2 text-white">
+      <p *ngIf="books.length > 0 && !loading && libros.length % limit !== 0" class="mt-2 text-white">
         No hay más libros para cargar.
       </p>
     </section>
