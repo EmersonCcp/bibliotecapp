@@ -1,4 +1,7 @@
 export const environment = {
+  apiUrlSocket: 'https://bibliotecapp-server-production.up.railway.app',
+  apiURL: 'https://bibliotecapp-server-production.up.railway.app/api',
+  secretKey: 'tangamandapio',
   production: true,
   firebaseConfig: {
     apiKey: 'AIzaSyAgK0h2g4T38oGdMcJvjDYdABh99zZHNsE',

@@ -1,6 +1,6 @@
 export const environment = {
-  apiUrlSocket: 'http://localhost:3100',
-  apiURL: 'http://localhost:3100/api',
+  apiUrlSocket: 'https://bibliotecapp-server-production.up.railway.app',
+  apiURL: 'https://bibliotecapp-server-production.up.railway.app/api',
   secretKey: 'tangamandapio',
   production: false,
   firebaseConfig: {

@@ -6,10 +6,9 @@ import { environment } from 'src/environments/environment';
 import { ILibro } from '../interfaces/libro.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LibroService {
-
   baseUrl = `${environment.apiURL}/libros`;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
@@ -26,7 +25,9 @@ export class LibroService {
   }
 
   // Método para crear un nuevo prestador
-  create(createPrestadorDto: any): Observable<{ ok: boolean; item: ILibro; message: string }> {
+  create(
+    createPrestadorDto: any
+  ): Observable<{ ok: boolean; item: ILibro; message: string }> {
     const headers = this.createHeaders();
     return this.http.post<{ ok: boolean; item: ILibro; message: string }>(
       `${this.baseUrl}`,
@@ -42,7 +43,12 @@ export class LibroService {
     query: string = '',
     orderByField: string = 'libr_titulo',
     orderByDirection: 'ASC' | 'DESC' = 'ASC'
-  ): Observable<{ ok: boolean; items: ILibro[]; total: number; message: string }> {
+  ): Observable<{
+    ok: boolean;
+    items: ILibro[];
+    total: number;
+    message: string;
+  }> {
     const headers = this.createHeaders();
     let params = new HttpParams()
       .set('limit', limit.toString())
@@ -51,26 +57,39 @@ export class LibroService {
       .set('orderByField', orderByField)
       .set('orderByDirection', orderByDirection);
 
-    return this.http.get<{ ok: boolean; items: ILibro[]; total: number; message: string }>(
-      `${this.baseUrl}/search`,
-      { headers, params }
-    );
+    return this.http.get<{
+      ok: boolean;
+      items: ILibro[];
+      total: number;
+      message: string;
+    }>(`${this.baseUrl}/search`, { headers, params });
   }
 
   // Método para obtener todos los prestadores
   findAll(): Observable<{ ok: boolean; items: ILibro[]; message: string }> {
     const headers = this.createHeaders();
-    return this.http.get<{ ok: boolean; items: ILibro[]; message: string }>(this.baseUrl, { headers });
+    return this.http.get<{ ok: boolean; items: ILibro[]; message: string }>(
+      this.baseUrl,
+      { headers }
+    );
   }
 
   // Método para obtener un prestador por su ID
-  findOne(id: number): Observable<{ ok: boolean; item: ILibro; message: string }> {
+  findOne(
+    id: number
+  ): Observable<{ ok: boolean; item: ILibro; message: string }> {
     const headers = this.createHeaders();
-    return this.http.get<{ ok: boolean; item: ILibro; message: string }>(`${this.baseUrl}/${id}`, { headers });
+    return this.http.get<{ ok: boolean; item: ILibro; message: string }>(
+      `${this.baseUrl}/${id}`,
+      { headers }
+    );
   }
 
   // Método para actualizar un prestador
-  update(id: number, updatePrestadorDto: any): Observable<{ ok: boolean; item: ILibro; message: string }> {
+  update(
+    id: number,
+    updatePrestadorDto: any
+  ): Observable<{ ok: boolean; item: ILibro; message: string }> {
     const headers = this.createHeaders();
     return this.http.put<{ ok: boolean; item: ILibro; message: string }>(
       `${this.baseUrl}/${id}`,
@@ -80,8 +99,13 @@ export class LibroService {
   }
 
   // Método para eliminar un prestador
-  remove(id: number): Observable<{ ok: boolean; item: ILibro; message: string }> {
+  remove(
+    id: number
+  ): Observable<{ ok: boolean; item: ILibro; message: string }> {
     const headers = this.createHeaders();
-    return this.http.delete<{ ok: boolean; item: ILibro; message: string }>(`${this.baseUrl}/${id}`, { headers });
+    return this.http.delete<{ ok: boolean; item: ILibro; message: string }>(
+      `${this.baseUrl}/${id}`,
+      { headers }
+    );
   }
 }
