@@ -35,6 +35,7 @@ export const categories: string[] = [
   'Historia de la Iglesia',
   'Jesucristo',
   'Justificación',
+  'Resurrección',
   'María',
   'Misa',
   'Padres de la Iglesia',
